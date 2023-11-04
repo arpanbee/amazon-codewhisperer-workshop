@@ -10,13 +10,8 @@ def handler(event, context):
     
     # Get the file_name from the path parameter
     file_name = event.get('pathParameters', {}).get('image_name')
-
-    # Make sure a file name is provided
-    if not file_name:
-        return {
-            'statusCode': 400,
-            'body': json.dumps({'message': 'No file name provided'})
-        }
+    file_name = file_name.replace("%20"," ")
+    print('the filename is ', file_name)
 
     # Make sure a file name is provided
     if not file_name:

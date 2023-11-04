@@ -56,7 +56,7 @@ def handler(event, context):
             receipt_handle = Record.get("receiptHandle")
             for record in json.loads(Record.get("body")).get("Records"):
                 bucket_name = record.get("s3").get("bucket").get("name")
-                key = record.get("s3").get("object").get("key")
+                key = record.get("s3").get("object").get("key").replace("+", " ")
 
                 # call method 1.) to generate image label and store as var "labels"
                 labels = detectImgLabels(bucket_name=bucket_name, key=key)
