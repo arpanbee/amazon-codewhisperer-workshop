@@ -14,7 +14,7 @@ class APIStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        bucket = s3.Bucket(self, "CW-Workshop-Images")
+        bucket = s3.Bucket(self, "CW-Workshop-Images-arpantech")
 
         image_get_and_save_lambda = lambda_.Function(
             self,

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Call and Render JSON Object</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .image-container {
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+        .labels {
+            margin-top: 10px;
+            padding: 6px;
+            background: #e9e9e9;
+            border-radius: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Picture Keywords</h1>
+<a href="submit.html">Submit a new Picture</a>
+
+<div id="gallery"></div>
+
+<script>
+    // Replace with your actual API URL
+    const apiUrl = 'https://172xtgb85i.execute-api.us-east-1.amazonaws.com/prod/';
+
+    async function fetchData() {
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                mode:  'cors'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            renderGallery(data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            document.getElementById('gallery').innerText = 'Error fetching data. Open the console for more information.';
+        }
+    }
+
+    function renderGallery(items) {
+        const gallery = document.getElementById('gallery');
+        items.forEach(item => {
+            const container = document.createElement('div');
+            container.className = 'image-container';
+
+            // Assuming 'image' contains a path or URL to the actual image
+            // const img = document.createElement('img');
+            // img.src = item.image; // Replace this with actual image path if necessary
+            // img.alt = 'Gallery Image';
+            const span = document.createElement('span');
+            span.className = 'name';
+            span.textContent = item.image;
+            container.appendChild(span);
+
+            // Parse labels (assuming it's a stringified array)
+            const labels = JSON.parse(item.labels.replace(/'/g, '"')); // Correct the quotes for JSON parsing
+            const labelsDiv = document.createElement('div');
+            labels.forEach(label => {
+                const span = document.createElement('span');
+                span.className = 'labels';
+                span.textContent = label;
+                labelsDiv.appendChild(span);
+            });
+            container.appendChild(labelsDiv);
+
+            gallery.appendChild(container);
+        });
+    }
+
+    // Call the fetchData function when the page loads
+    window.addEventListener('load', fetchData);
+</script>
+
+</body>
+</html>

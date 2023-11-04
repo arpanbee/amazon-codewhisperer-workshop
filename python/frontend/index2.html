@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Call and Render JSON</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f7f7f7;
+        }
+        #apiResponse {
+            background: #fff;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+<h1>JSON Response from API</h1>
+<div id="apiResponse"><pre>{}</pre></div>
+
+<script>
+    // Replace with your actual API URL
+    const apiUrl = 'https://37g7ev31p7.execute-api.us-east-1.amazonaws.com/prod/';
+
+    async function fetchData() {
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                mode:  'cors'
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            // Insert the JSON into the page
+            document.getElementById('apiResponse').firstChild.textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            document.getElementById('apiResponse').firstChild.textContent = 'Error fetching data. Open the console for more information.';
+        }
+    }
+
+    // Call the fetchData function when the page loads
+    window.addEventListener('load', fetchData);
+</script>
+
+</body>
+</html>

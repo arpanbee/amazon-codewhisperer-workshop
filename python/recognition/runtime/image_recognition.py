@@ -11,22 +11,47 @@ queue_url = os.environ["SQS_QUEUE_URL"]
 table_name = os.environ["TABLE_NAME"]
 topic_arn = os.environ["TOPIC_ARN"]
 
-# 1.) Detect labels from image with Rekognition
+# 1.) Detect labels from image with Rekognition as "labels"
+def detectImgLabels(bucket_name, key, maxLabels=10, minConfidence=70):
+    image = {
+        "S3Object": {
+            "Bucket": bucket_name,
+            "Name": key
+        }
+    }
+    response = rekognition.detect_labels(Image=image, MaxLabels=10, MinConfidence=70)
+    return response
+
 
 # 2.) Save labels to DynamoDB
+def writeToDynamoDb(tableName, item):
+    dynamodb.put_item(
+        TableName=tableName,
+        Item=item
+    )
 
 # 3.) Publish item to SNS
+def triggerSNS(message):
+    response = sns.publish(
+        TopicArn=topic_arn,
+        Message=message,
+        Subject="CodeWhisperer Workshop Success!",
+
+    )
+    print(response)
 
 # 4.) Delete message from SQS
-
-# <<Amazon CodeWhisperer generated code goes here>>
+def deleteFromSqs(receipt_handle):
+    sqs.delete_message(
+        QueueUrl=queue_url,
+        ReceiptHandle=receipt_handle
+    )
 
 
 def handler(event, context):
     print(event)
-    print(type(event))
     try:
-        # process message from SQS
+        # Read message from SQS
         for Record in event.get("Records"):
             receipt_handle = Record.get("receiptHandle")
             for record in json.loads(Record.get("body")).get("Records"):
@@ -34,6 +59,8 @@ def handler(event, context):
                 key = record.get("s3").get("object").get("key")
 
                 # call method 1.) to generate image label and store as var "labels"
+                labels = detectImgLabels(bucket_name=bucket_name, key=key)
+                print(key, labels["Labels"])
 
                 # code snippet to create dynamodb item from labels
                 db_result = []
@@ -47,10 +74,13 @@ def handler(event, context):
                 }
 
                 # call method 2.) to store "db_item" result on DynamoDB
-                
+                writeToDynamoDb(tableName=table_name, item=db_item)
+
                 # call method 3.) to send message to SNS
+                triggerSNS(str(db_result))
 
                 # call method 4.) to delete img from SQS
+                deleteFromSqs(receipt_handle=receipt_handle)
 
     except Exception as e:
         print(e)

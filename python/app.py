@@ -3,8 +3,9 @@ import aws_cdk as cdk
 from api.infrastructure import APIStack
 from integration.infrastructure import IntegrationStack
 from recognition.infrastructure import RekognitionStack
+from frontend.infrastructure import StaticSiteStack
 
-DEFAULT_REGION = 'us-west-2'
+DEFAULT_REGION = 'us-east-1'
 
 app = cdk.App()
 apiStack = APIStack(app, "APIStack", env=cdk.Environment(region=DEFAULT_REGION))
@@ -17,5 +18,6 @@ RekognitionStack(
     sns_arn=integrationStack.sns_arn,
     env=cdk.Environment(region=DEFAULT_REGION)
 )
+staticSiteStack = StaticSiteStack(app, "StaticSiteStack", env=cdk.Environment(region=DEFAULT_REGION))
 
 app.synth()

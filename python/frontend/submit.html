@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Submission Form</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f7;
+            margin: 0;
+            padding: 20px;
+        }
+        .form-container {
+            background-color: #ffffff;
+            padding: 30px;
+            max-width: 400px;
+            margin: 50px auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .success-message {
+            color: #28a745;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        form label {
+            margin-bottom: 5px;
+            font-size: 16px;
+            color: #333;
+        }
+        form input[type="text"], form input[type="submit"] {
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        form input[type="submit"] {
+            border: none;
+            background-color: #0056b3;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        form input[type="submit"]:hover {
+            background-color: #003d82;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Image Keyword Extractor</h1>
+<a href="index.html">View Previous Pictures</a>
+
+<div class="form-container">
+    <div class="success-message" id="successMessage">Image submitted successfully!  Please wait while we extract keywords...</div>
+    <form id="imageForm">
+        <label for="imageName">Enter the name of an image:</label>
+        <input type="text" id="imageName" name="name" required>
+
+        <label for="imageUrl">Enter the URL of the image:</label>
+        <input type="text" id="imageUrl" name="url" required>
+
+        <input type="submit" value="Submit">
+    </form>
+</div>
+
+<script>
+    document.getElementById('imageForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const name = document.getElementById('imageName').value;
+        const url = document.getElementById('imageUrl').value;
+        
+        // Construct the API endpoint with query parameters
+        const apiEndpoint = 'https://wkfbzzaqlf.execute-api.us-east-1.amazonaws.com/prod';
+        const queryParams = `?name=${encodeURIComponent(name)}&url=${encodeURIComponent(url)}`;
+
+        fetch(apiEndpoint + queryParams, {
+            method: 'GET',
+            // If you need to send headers or body, uncomment and populate these sections
+            // headers: {
+            //     'Content-Type': 'application/json',
+            // },
+            // body: JSON.stringify({ name, url })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Success:', data);
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'block'; // Show the success message
+
+            // Wait for 2 seconds before redirecting to /index.html
+            setTimeout(function() {
+                window.location.href = '/index.html';
+            }, 2000);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            // Handle error state here, potentially inform the user
+        });
+    });
+</script>
+
+</body>
+</html>

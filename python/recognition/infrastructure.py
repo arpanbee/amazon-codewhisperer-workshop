@@ -91,6 +91,10 @@ class RekognitionStack(Stack):
             self,
             "REST_API",
             rest_api_name="List Images Service",
+            default_cors_preflight_options=apigateway.CorsOptions(
+                allow_origins=apigateway.Cors.ALL_ORIGINS,
+                allow_methods=apigateway.Cors.ALL_METHODS
+            ),
             description="CW workshop - list images recognized from workshop."
         )
 
