@@ -41,7 +41,7 @@ def handler(event, context):
     return {
         'statusCode': 200,
         'headers': {
-            'Access-Control-Allow-Origin': '*',  # Ensure proper CORS settings
+            'Access-Control-Allow-Origin': 'https://labels.olsongallery.com',  # Ensure proper CORS settings
             'Content-Type': 'application/json'
         },
         'body': json.dumps({'file_name': file_name, 'presignedUrl': presigned_url})

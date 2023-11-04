@@ -1,4 +1,5 @@
 import base64
+import boto3
 
 def handler(event, context):
     # Get request and request headers
@@ -6,11 +7,25 @@ def handler(event, context):
     headers = request.get('headers', {})
 
     # Configure authentication
-    auth_user = 'user'
-    auth_pass = 'pass'
+    user_secret_arn = "arn:aws:secretsmanager:us-east-1:629080472841:secret:UserSecret"
+    pass_secret_arn = "arn:aws:secretsmanager:us-east-1:629080472841:secret:PassSecret"
+
+    client = boto3.client('secretsmanager')
+
+    user_value_response = client.get_secret_value(
+        SecretId=user_secret_arn
+    )
+
+    pass_value_response = client.get_secret_value(
+        SecretId=pass_secret_arn
+    )
+    
+    AUTH_USER = user_value_response['SecretString']
+    AUTH_PASS = pass_value_response['SecretString']
+    
 
     # Construct the Basic Auth string
-    auth_string = 'Basic ' + base64.b64encode(f'{auth_user}:{auth_pass}'.encode()).decode()
+    auth_string = 'Basic ' + base64.b64encode(f'{AUTH_USER}:{AUTH_PASS}'.encode()).decode()
 
     # Require Basic authentication
     expected_auth = headers.get('authorization', [{}])[0].get('value', '')

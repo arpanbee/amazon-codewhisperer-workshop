@@ -5,7 +5,9 @@ from aws_cdk import aws_wafv2 as wafv2
 from aws_cdk import Stack
 from aws_cdk import Duration
 from aws_cdk import RemovalPolicy
+from aws_cdk.aws_secretsmanager import Secret
 from aws_cdk import aws_lambda as _lambda
+from aws_cdk import aws_iam as iam
 
 class StaticSiteStack(Stack):
 
@@ -37,6 +39,16 @@ class StaticSiteStack(Stack):
         #     rules=[]  # Add your rules here
         #     )
 
+        user_secret = Secret(self, "UserSecret",
+            secret_name="UserSecret",
+            description="This is a secret that stores the user name for cloudfront auth",
+        )
+
+        pass_secret = Secret(self, "PassSecret",
+            secret_name="PassSecret",
+            description="This is a secret that stores the password for cloudfront auth",
+        )
+
         # Define the Lambda@Edge function
         lambda_at_edge = _lambda.Function(
             self, 'EdgeAuthorizer',
@@ -46,6 +58,16 @@ class StaticSiteStack(Stack):
             timeout=Duration.seconds(5),
             memory_size=128
         )
+
+        lambda_at_edge.add_to_role_policy(iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=[
+                'secretsmanager:GetSecretValue',
+            ],
+            resources=[
+                '*',
+            ],
+        ))
 
         # CloudFront distribution
         distribution = cloudfront.CloudFrontWebDistribution(self, "CloudFront",

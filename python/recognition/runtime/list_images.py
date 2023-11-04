@@ -21,7 +21,7 @@ def handler(event, context):
         "body": json.dumps(response),
         'headers': {
             'Access-Control-Allow-Headers': 'Content-Type',
-            'Access-Control-Allow-Origin': 'https://d3lhfhivwcf7sm.cloudfront.net',
+            'Access-Control-Allow-Origin': 'https://labels.olsongallery.com',
             'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
         },
         "statusCode": 200
