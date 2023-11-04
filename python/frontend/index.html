@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Call and Render JSON Object</title>
+    <title>Extracted Image Labels</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -23,6 +23,12 @@
             height: auto;
             border-radius: 4px;
         }
+        .name {
+            margin-top: 10px;
+            padding: 6px;
+            border-radius: 10px;
+            display: inline-block;
+        }
         .labels {
             margin-top: 10px;
             padding: 6px;
@@ -30,16 +36,77 @@
             border-radius: 10px;
             display: inline-block;
         }
+        .stylish-button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition-duration: 0.4s;
+        }
+
+        .stylish-button:hover {
+            background-color: white;
+            color: black;
+            border: 1px solid #4CAF50;
+        }
+
+        #floatingDiv {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            z-index: 1000;
+        }
+        
+        #floatingImage {
+            max-width: 100%;
+            max-height: 100%;
+        }
     </style>
 </head>
 <body>
 
-<h1>Picture Keywords</h1>
-<a href="submit.html">Submit a new Picture</a>
+<h1>Extracted Image Labels</h1>
+<a href="submit.html">Submit an image to extract labels</a>
+<p></p>
 
 <div id="gallery"></div>
+<div id="floatingDiv">
+    <img id="floatingImage" src="" alt="Floating Image">
+</div>
 
 <script>
+
+    function loadImage(imageName) {
+        const apiUrl = `https://wkfbzzaqlf.execute-api.us-east-1.amazonaws.com/prod/retrieve/${encodeURIComponent(imageName)}`;
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.presignedUrl) {
+                    const imageDiv = document.getElementById('floatingDiv');
+                    const imageElement = document.getElementById('floatingImage');
+                    imageElement.src = data.presignedUrl;
+                    imageDiv.style.display = 'block'; // Show the div with the image
+                    
+                    // Hide the floating div after 5 seconds
+                    setTimeout(() => {
+                        imageDiv.style.display = 'none';
+                    }, 5000);
+                } else {
+                    console.error('No presigned URL provided.');
+                }
+            })
+            .catch(error => console.error('Error fetching presigned URL:', error));
+    }
     // Replace with your actual API URL
     const apiUrl = 'https://172xtgb85i.execute-api.us-east-1.amazonaws.com/prod/';
 
@@ -87,6 +154,12 @@
                 labelsDiv.appendChild(span);
             });
             container.appendChild(labelsDiv);
+
+            const button = document.createElement('button');
+            button.onclick = () => loadImage(item.image);
+            button.className = 'stylish-button';
+            button.textContent =  'Load ' + item.image;
+            container.appendChild(button);
 
             gallery.appendChild(container);
         });

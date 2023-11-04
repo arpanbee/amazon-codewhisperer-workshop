@@ -8,6 +8,7 @@ from aws_cdk import aws_sns_subscriptions as sns_subs
 from aws_cdk import aws_sns as sns
 from aws_cdk import aws_s3_notifications as s3n
 from aws_cdk import Stack
+from aws_cdk import aws_iam as iam
 
 
 class APIStack(Stack):
@@ -26,6 +27,26 @@ class APIStack(Stack):
             environment={"BUCKET_NAME": bucket.bucket_name}
         )
 
+        image_retrieve_lambda = lambda_.Function(
+            self,
+            "ImageRetrieveLambda",
+            function_name="ImageRetrieveLambda",
+            runtime=lambda_.Runtime.PYTHON_3_7,
+            code=lambda_.Code.from_asset("api/retrieve"),
+            handler="retrieve_image.handler",
+            environment={"BUCKET_NAME": bucket.bucket_name}
+        )
+
+        image_retrieve_lambda.add_to_role_policy(iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=[
+                's3:GetObject',
+            ],
+            resources=[
+                f'arn:aws:s3:::{bucket.bucket_name}/*',
+            ],
+        ))
+
         bucket.grant_read_write(image_get_and_save_lambda)
 
         api = apigateway.RestApi(
@@ -40,7 +61,13 @@ class APIStack(Stack):
             request_templates={"application/json": '{ "statusCode": "200" }'}
         )
 
+        retrieve_integration = apigateway.LambdaIntegration(
+            image_retrieve_lambda,
+            request_templates={"application/json": '{ "statusCode": "200" }'}
+        )
+
         api.root.add_method("GET", get_image_integration)
+        api.root.add_resource("retrieve").add_resource("{image_name}").add_method("GET", retrieve_integration)
 
         upload_queue = sqs.Queue(
             self,

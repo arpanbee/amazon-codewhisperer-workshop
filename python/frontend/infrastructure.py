@@ -3,7 +3,9 @@ from aws_cdk import aws_s3 as s3
 from aws_cdk import aws_cloudfront as cloudfront
 from aws_cdk import aws_wafv2 as wafv2
 from aws_cdk import Stack
+from aws_cdk import Duration
 from aws_cdk import RemovalPolicy
+from aws_cdk import aws_lambda as _lambda
 
 class StaticSiteStack(Stack):
 
@@ -35,6 +37,16 @@ class StaticSiteStack(Stack):
         #     rules=[]  # Add your rules here
         #     )
 
+        # Define the Lambda@Edge function
+        lambda_at_edge = _lambda.Function(
+            self, 'EdgeAuthorizer',
+            runtime=_lambda.Runtime.PYTHON_3_9,
+            handler='edge_auth.handler',
+            code=_lambda.Code.from_asset('frontend/auth'),
+            timeout=Duration.seconds(5),
+            memory_size=128
+        )
+
         # CloudFront distribution
         distribution = cloudfront.CloudFrontWebDistribution(self, "CloudFront",
             origin_configs=[
@@ -43,7 +55,12 @@ class StaticSiteStack(Stack):
                         s3_bucket_source=bucket,
                         origin_access_identity=oai),
                     behaviors=[cloudfront.Behavior(
-                        is_default_behavior=True)]
+                        is_default_behavior=True,
+                        lambda_function_associations=[cloudfront.LambdaFunctionAssociation(
+                            event_type=cloudfront.LambdaEdgeEventType.VIEWER_REQUEST, # or another event type
+                            lambda_function=lambda_at_edge.current_version,
+                        )]
+                    )]
                 )
             ]
         )
